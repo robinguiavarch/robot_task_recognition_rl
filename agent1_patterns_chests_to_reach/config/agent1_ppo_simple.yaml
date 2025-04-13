@@ -1,0 +1,17 @@
+# PPO Config for Agent 1 - Simple Event Mapping
+
+env_id: OpenTheChests-v0
+algorithm: PPO
+
+# Model
+policy: MultiInputPolicy
+learning_rate: 0.0003
+gamma: 0.99
+n_steps: 2048
+batch_size: 64
+n_epochs: 10
+
+# Training
+total_timesteps: 50000
+save_path: agent1_patterns_chests_to_reach/approach1_simple_event_mapping/weights/agent1_simple_ppo.zip
+log_path: agent1_patterns_chests_to_reach/approach1_simple_event_mapping/logs/ppo/
