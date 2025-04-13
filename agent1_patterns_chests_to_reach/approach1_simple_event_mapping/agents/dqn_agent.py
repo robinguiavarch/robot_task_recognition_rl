@@ -1,41 +1,86 @@
-from stable_baselines3 import DQN
-from agent1_patterns_chests_to_reach.env.register_envs import register_custom_envs
-import gym
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
 
 
-def train_dqn(env_id: str,
-              total_timesteps: int = 50000,
-              save_path: str = None,
-              log_path: str = None,
-              learning_rate: float = 1e-3):
+class QNetwork(nn.Module):
     """
-    Train a DQN agent on the specified environment.
+    A simple feedforward neural network for Q-learning.
+    Input: state vector
+    Output: Q-values for each possible action
+    """
+    def __init__(self, state_size, action_size):
+        super().__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(state_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, action_size)
+        )
+
+    def forward(self, x):
+        return self.fc(x)
+
+
+def select_action(model, state, eps=0.1, device="cpu"):
+    """
+    Epsilon-greedy action selection.
 
     Args:
-        env_id (str): Gym environment ID (e.g., 'OpenTheChests-v0').
-        total_timesteps (int): Number of training steps.
-        save_path (str): Path to save the trained model.
-        log_path (str): Path for tensorboard logging.
-        learning_rate (float): Learning rate.
+        model: The Q-network.
+        state: Encoded input state (numpy array).
+        eps: Exploration probability.
+        device: Torch device.
 
     Returns:
-        DQN: Trained model.
+        action (int): Selected action index (0 to 7).
     """
-    register_custom_envs()
-    env = gym.make(env_id)
+    if np.random.rand() < eps:
+        return np.random.randint(0, 8)
+    with torch.no_grad():
+        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(device)
+        q_values = model(state_tensor)
+        return torch.argmax(q_values).item()
 
-    model = DQN(
-        policy="MlpPolicy",
-        env=env,
-        learning_rate=learning_rate,
-        verbose=1,
-        tensorboard_log=log_path
-    )
 
-    model.learn(total_timesteps=total_timesteps)
+def train(q_net, target_net, buffer, optimizer, batch_size, gamma, device="cpu"):
+    """
+    Perform a single training step using a batch of transitions from the replay buffer.
 
-    if save_path:
-        model.save(save_path)
-        print(f"✅ DQN model saved to {save_path}")
+    Args:
+        q_net: Current Q-network.
+        target_net: Target Q-network.
+        buffer: ReplayBuffer object.
+        optimizer: Optimizer for the Q-network.
+        batch_size: Number of transitions to sample.
+        gamma: Discount factor.
+        device: Torch device.
 
-    return model
+    Returns:
+        float or None: Loss value if a batch is sampled, else None.
+    """
+    if len(buffer) < batch_size:
+        return None
+
+    state, action, reward, next_state, done = buffer.sample(batch_size)
+
+    state = torch.tensor(state, dtype=torch.float32).to(device)
+    action = torch.tensor(action, dtype=torch.float32).to(device)
+    reward = torch.tensor(reward, dtype=torch.float32).unsqueeze(1).to(device)
+    next_state = torch.tensor(next_state, dtype=torch.float32).to(device)
+    done = torch.tensor(done, dtype=torch.float32).unsqueeze(1).to(device)
+
+    q_values = q_net(state)
+    target_q_values = target_net(next_state).detach()
+    max_target_q = target_q_values.max(1, keepdim=True)[0]
+
+    q_action = torch.sum(q_values * action, dim=1, keepdim=True)
+    target = reward + (1 - done) * gamma * max_target_q
+
+    loss = F.mse_loss(q_action, target)
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    return loss.item()
