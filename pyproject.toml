@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "robot-task-recognition-rl"
+version = "0.1.0"
+description = ""
+authors = ["Robin Guiavarch <robin.guiavarch@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "*"
+torch = "*"
+matplotlib = "*"
+pandas = "*"
+pyyaml = "*"
+notebook = "^7.4.0"
+ipykernel = "^6.29.5"
+tensorboard = "^2.19.0"
+openthechests = {version = "^0.5.8", source = "pypi"}
+gym = "0.26.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+

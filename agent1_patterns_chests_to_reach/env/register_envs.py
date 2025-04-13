@@ -1,5 +1,5 @@
 from gym.envs.registration import register
-
+import gym
 
 all_event_types = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 all_event_attributes = {

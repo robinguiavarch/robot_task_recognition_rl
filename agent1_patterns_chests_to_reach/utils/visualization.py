@@ -1,11 +1,13 @@
 """
 Timeline visualization of observed events.
 
-This module provides a function to plot event sequences over time.
+This module provides a function to plot event sequences over time or visualize them directly from the environment.
 """
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import gym
+from agent1_patterns_chests_to_reach.utils.data_collectors import collect_observations
 
 
 def plot_event_timeline(events, start_time=0, end_time=None, env_name=""):
@@ -66,3 +68,20 @@ def plot_event_timeline(events, start_time=0, end_time=None, env_name=""):
     ax.set_ylabel("Event Sequences")
     ax.set_title(f"Observed Event Timeline ({env_name})" if env_name else "Event Timeline")
     plt.show()
+
+
+def visualize_env_timeline(env_name: str, num_steps: int = 30):
+    """
+    Collect observations and display the timeline for a given environment.
+
+    Args:
+        env_name (str): Environment ID.
+        num_steps (int): Number of steps to simulate.
+    """
+    events = collect_observations(env_name, num_steps=num_steps)
+    plot_event_timeline(
+        events,
+        start_time=0,
+        end_time=events[-1]["end_time"],
+        env_name=env_name
+    )
