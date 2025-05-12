@@ -1,6 +1,11 @@
 import gym
 from agent1_patterns_chests_to_reach.utils.event_encoding import event_to_dict_from_gym
 from agent1_patterns_chests_to_reach.env.register_envs import all_types, all_attributes
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import gym
+from openthechests.src.OpenTheChestsGym import OpenTheChestsGym
 
 
 def collect_observations(env_name: str, num_steps: int = 30):

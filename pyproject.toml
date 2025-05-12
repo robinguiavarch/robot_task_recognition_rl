@@ -18,6 +18,10 @@ ipykernel = "^6.29.5"
 tensorboard = "^2.19.0"
 openthechests = {version = "^0.5.8", source = "pypi"}
 gym = "0.26.2"
+sb3-contrib = "^2.6.0"
+shimmy = "^2.0"
+tqdm = "^4.67.1"
+tdqm = "^0.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
